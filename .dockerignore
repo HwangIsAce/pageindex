@@ -10,13 +10,10 @@ __pycache__
 !README.md
 tests/
 cookbook/
-tutorials/
-results/
 data/
+results/
 *.db
 .ipynb_checkpoints
 .DS_Store
 log/
 logs/
-parts/
-json_results/

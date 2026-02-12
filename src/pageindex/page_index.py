@@ -1,13 +1,13 @@
-import os
-import json
 import copy
+import json
 import math
+import os
 import random
 import re
 import uuid
-from .utils import *
-import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+from .utils import *
 
 
 ################### check title in page #########################################################

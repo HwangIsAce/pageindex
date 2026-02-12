@@ -1,10 +1,20 @@
 import argparse
-import os
-import json
 import glob
-from pageindex import *
-from pageindex.page_index_md import md_to_tree
-from pageindex.unified_toc import page_index_batch, build_unified_toc, save_unified_toc
+import json
+import os
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent / "src"))
+
+from pageindex import (
+    md_to_tree,
+    page_index_main,
+    page_index_batch,
+    build_unified_toc,
+    save_unified_toc,
+)
+from pageindex.utils import config
 
 if __name__ == "__main__":
     # Set up argument parser

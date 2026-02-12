@@ -1,15 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual env
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Project
+.env
+.env.*
+!.env.example
+data/
+results/
+*.db
+log/
+logs/
+parts/
+json_results/
+notebook/
+
+# Notebooks
 .ipynb_checkpoints
-__pycache__
+
+# Test
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Misc
+.DS_Store
 files
 index
-temp/*
-chroma-collections.parquet
-chroma-embeddings.parquet
-.DS_Store
-.env*
-notebook
-SDK/*
-log/*
-logs/
-parts/*
-json_results/*
+temp/
+chroma-*.parquet
+SDK/

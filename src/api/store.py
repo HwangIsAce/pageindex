@@ -1,14 +1,13 @@
 """
 Job and document storage (SQLite).
 """
-import json
-import os
 import sqlite3
 import uuid
 from datetime import datetime
 from pathlib import Path
 
-DATA_DIR = Path(os.getenv("PAGEINDEX_DATA_DIR", "data"))
+from api.config import DATA_DIR
+
 DB_PATH = DATA_DIR / "pageindex.db"
 
 

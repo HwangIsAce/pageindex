@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 """Run the PageIndex API server."""
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent / "src"))
+
 import uvicorn
 
 if __name__ == "__main__":

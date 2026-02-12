@@ -1,18 +1,6 @@
-"""
-API E2E tests. Run with: python -m pytest tests/test_api.py -v
-"""
-import os
-import sys
-import tempfile
-
+"""API E2E tests. Run: pytest tests/test_api.py -v"""
 import pytest
-
-# Ensure project root is on path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from fastapi.testclient import TestClient
-
-# Use temp dir for test data to avoid polluting dev data
-os.environ["PAGEINDEX_DATA_DIR"] = tempfile.mkdtemp(prefix="pageindex_test_")
 
 
 @pytest.fixture

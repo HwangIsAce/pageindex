@@ -318,7 +318,7 @@ if __name__ == "__main__":
     
     # MD_NAME = 'Detect-Order-Construct'
     MD_NAME = 'cognitive-load'
-    MD_PATH = os.path.join(os.path.dirname(__file__), '..', 'tests/markdowns/', f'{MD_NAME}.md')
+    MD_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'tests/markdowns/', f'{MD_NAME}.md')
 
 
     MODEL="gpt-4.1"
@@ -345,7 +345,7 @@ if __name__ == "__main__":
     print('='*60)
     print_toc(tree_structure['structure'])
 
-    output_path = os.path.join(os.path.dirname(__file__), '..', 'results', f'{MD_NAME}_structure.json')
+    output_path = os.path.join(os.path.dirname(__file__), '..', '..', 'results', f'{MD_NAME}_structure.json')
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
     with open(output_path, 'w', encoding='utf-8') as f:

@@ -2,14 +2,10 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install dependencies
-COPY requirements.txt pyproject.toml ./
-RUN pip install --no-cache-dir -r requirements.txt \
-    fastapi uvicorn python-multipart slowapi
-
 COPY . .
+RUN pip install --no-cache-dir -e .
 
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/app/src
 ENV PAGEINDEX_DATA_DIR=/app/data
 
 EXPOSE 8000

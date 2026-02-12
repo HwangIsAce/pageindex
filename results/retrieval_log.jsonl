@@ -1,2 +1,0 @@
-{"query_id": "f464ef09e4ac4518a29fbcb4432601db", "timestamp": "2026-02-12T12:04:34.722478Z", "nodes": [{"doc_id": "earthmover-001", "node_id": "0002"}, {"doc_id": "earthmover-001", "node_id": "0006"}], "query": "What is EMD?"}
-{"query_id": "be4eeacb59ae461f86bc0cf3fabc7a53", "timestamp": "2026-02-12T12:04:42.531859Z", "nodes": [{"doc_id": "earthmover-001", "node_id": "0002"}, {"doc_id": "earthmover-001", "node_id": "0006"}], "query": "How is EMD computed?"}

@@ -7,6 +7,10 @@ import argparse
 import json
 import os
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent / "src"))
+
 from pageindex import load_unified_toc, query
 
 

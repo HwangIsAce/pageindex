@@ -1,21 +1,22 @@
-import tiktoken
-import openai
+import asyncio
+import copy
+import json
 import logging
 import os
-from datetime import datetime
 import time
-import json
-import PyPDF2
-import copy
-import asyncio
-import pymupdf
+from datetime import datetime
 from io import BytesIO
-from dotenv import load_dotenv
-load_dotenv()
-import logging
-import yaml
 from pathlib import Path
 from types import SimpleNamespace as config
+
+import openai
+import PyPDF2
+import pymupdf
+import tiktoken
+import yaml
+from dotenv import load_dotenv
+
+load_dotenv()
 
 CHATGPT_API_KEY = os.getenv("CHATGPT_API_KEY")
 
