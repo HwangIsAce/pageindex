@@ -1,13 +1,16 @@
 """
 PageIndex API server.
 """
+import json
+
 from fastapi import BackgroundTasks, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
 from api.store import DATA_DIR, create_job, get_document, get_job, list_documents
 from api.tasks import run_indexing_task
-from pageindex import load_unified_toc
+from pageindex import load_unified_toc, query as pageindex_query
 
 app = FastAPI(
     title="PageIndex API",
@@ -96,3 +99,29 @@ def get_document_toc(document_id: str):
         raise HTTPException(404, "Document not found")
     toc = load_unified_toc(doc["toc_path"])
     return toc
+
+
+class QueryRequest(BaseModel):
+    query: str
+
+
+@app.post("/documents/{document_id}/query")
+def query_document(document_id: str, body: QueryRequest):
+    """
+    Query a document using RAG. Returns answer and retrieved node references.
+    """
+    doc = get_document(document_id)
+    if doc is None:
+        raise HTTPException(404, "Document not found")
+    unified_toc = load_unified_toc(doc["toc_path"])
+    with open(doc["doc_store_path"], encoding="utf-8") as f:
+        doc_store = json.load(f)
+    result = pageindex_query(
+        body.query,
+        unified_toc,
+        doc_store,
+    )
+    return {
+        "answer": result["answer"],
+        "retrieved_nodes": result["retrieved_nodes"],
+    }
