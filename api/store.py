@@ -132,3 +132,15 @@ def list_documents():
     rows = conn.execute("SELECT * FROM documents ORDER BY created_at DESC").fetchall()
     conn.close()
     return [dict(r) for r in rows]
+
+
+def delete_document(doc_id):
+    """Delete document record. Returns True if deleted, False if not found."""
+    doc = get_document(doc_id)
+    if doc is None:
+        return False
+    conn = _get_conn()
+    conn.execute("DELETE FROM documents WHERE id = ?", (doc_id,))
+    conn.commit()
+    conn.close()
+    return True

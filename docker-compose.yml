@@ -1,0 +1,14 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - pageindex_data:/app/data
+    env_file:
+      - .env
+    environment:
+      - PAGEINDEX_DATA_DIR=/app/data
+
+volumes:
+  pageindex_data:

@@ -2,25 +2,49 @@
 PageIndex API server.
 """
 import json
+import logging
+import os
+import shutil
 
-from fastapi import BackgroundTasks, FastAPI, File, HTTPException, UploadFile
+from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
-from api.store import DATA_DIR, create_job, get_document, get_job, list_documents
+from api.logging_config import RequestLoggingMiddleware, setup_logging
+from api.store import (
+    DATA_DIR,
+    create_job,
+    delete_document,
+    get_document,
+    get_job,
+    list_documents,
+)
 from api.tasks import run_indexing_task
 from pageindex import load_unified_toc, query as pageindex_query
+
+setup_logging()
+log = logging.getLogger("api")
+
+_CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*")
+limiter = Limiter(key_func=get_remote_address)
+_CORS_ORIGINS_LIST = [o.strip() for o in _CORS_ORIGINS.split(",") if o.strip()]
 
 app = FastAPI(
     title="PageIndex API",
     description="API for document indexing and retrieval with PageIndex",
     version="0.1.0",
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_CORS_ORIGINS_LIST if _CORS_ORIGINS_LIST != ["*"] else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,7 +58,9 @@ def health():
 
 
 @app.post("/documents")
+@limiter.limit("10/minute")
 async def upload_documents(
+    request: Request,
     background_tasks: BackgroundTasks,
     files: list[UploadFile] = File(...),
 ):
@@ -49,9 +75,12 @@ async def upload_documents(
     upload_dir = DATA_DIR / "uploads" / job_id
     upload_dir.mkdir(parents=True, exist_ok=True)
 
+    max_bytes = int(os.getenv("MAX_UPLOAD_BYTES", "104857600"))  # 100MB default
     for f in pdfs:
-        path = upload_dir / (f.filename or "unnamed.pdf")
         content = await f.read()
+        if len(content) > max_bytes:
+            raise HTTPException(400, f"File {f.filename} exceeds max size ({max_bytes} bytes)")
+        path = upload_dir / (f.filename or "unnamed.pdf")
         path.write_bytes(content)
 
     background_tasks.add_task(run_indexing_task, job_id, upload_dir)
@@ -125,3 +154,16 @@ def query_document(document_id: str, body: QueryRequest):
         "answer": result["answer"],
         "retrieved_nodes": result["retrieved_nodes"],
     }
+
+
+@app.delete("/documents/{document_id}")
+def delete_document_route(document_id: str):
+    """Delete an indexed document and its stored files."""
+    doc = get_document(document_id)
+    if doc is None:
+        raise HTTPException(404, "Document not found")
+    doc_dir = DATA_DIR / "documents" / document_id
+    if doc_dir.exists():
+        shutil.rmtree(doc_dir, ignore_errors=True)
+    delete_document(document_id)
+    return {"status": "deleted", "document_id": document_id}
