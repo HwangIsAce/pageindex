@@ -27,6 +27,11 @@ if __name__ == "__main__":
                       help='Whether to add doc description to the doc')
     parser.add_argument('--if-add-node-text', type=str, default='no',
                       help='Whether to add text to the node')
+
+    parser.add_argument('--doc-id', type=str, default=None,
+                      help='Document ID (auto-generated UUID if not specified)')
+    parser.add_argument('--doc-name', type=str, default=None,
+                      help='Display name for the document (overrides filename)')
                       
     # Markdown specific arguments
     parser.add_argument('--if-thinning', type=str, default='no',
@@ -52,16 +57,21 @@ if __name__ == "__main__":
             
         # Process PDF file
         # Configure options
-        opt = config(
-            model=args.model,
-            toc_check_page_num=args.toc_check_pages,
-            max_page_num_each_node=args.max_pages_per_node,
-            max_token_num_each_node=args.max_tokens_per_node,
-            if_add_node_id=args.if_add_node_id,
-            if_add_node_summary=args.if_add_node_summary,
-            if_add_doc_description=args.if_add_doc_description,
-            if_add_node_text=args.if_add_node_text
-        )
+        opt_kwargs = {
+            'model': args.model,
+            'toc_check_page_num': args.toc_check_pages,
+            'max_page_num_each_node': args.max_pages_per_node,
+            'max_token_num_each_node': args.max_tokens_per_node,
+            'if_add_node_id': args.if_add_node_id,
+            'if_add_node_summary': args.if_add_node_summary,
+            'if_add_doc_description': args.if_add_doc_description,
+            'if_add_node_text': args.if_add_node_text
+        }
+        if args.doc_id is not None:
+            opt_kwargs['doc_id'] = args.doc_id
+        if args.doc_name is not None:
+            opt_kwargs['doc_display_name'] = args.doc_name
+        opt = config(**opt_kwargs)
 
         # Process the PDF
         toc_with_page_number = page_index_main(args.pdf_path, opt)
@@ -103,21 +113,31 @@ if __name__ == "__main__":
             'if_add_node_text': args.if_add_node_text,
             'if_add_node_id': args.if_add_node_id
         }
-        
+        if args.doc_id is not None:
+            user_opt['doc_id'] = args.doc_id
+        if args.doc_name is not None:
+            user_opt['doc_display_name'] = args.doc_name
+
         # Load config with defaults from config.yaml
         opt = config_loader.load(user_opt)
-        
-        toc_with_page_number = asyncio.run(md_to_tree(
-            md_path=args.md_path,
-            if_thinning=args.if_thinning.lower() == 'yes',
-            min_token_threshold=args.thinning_threshold,
-            if_add_node_summary=opt.if_add_node_summary,
-            summary_token_threshold=args.summary_token_threshold,
-            model=opt.model,
-            if_add_doc_description=opt.if_add_doc_description,
-            if_add_node_text=opt.if_add_node_text,
-            if_add_node_id=opt.if_add_node_id
-        ))
+
+        md_kwargs = {
+            'md_path': args.md_path,
+            'if_thinning': args.if_thinning.lower() == 'yes',
+            'min_token_threshold': args.thinning_threshold,
+            'if_add_node_summary': opt.if_add_node_summary,
+            'summary_token_threshold': args.summary_token_threshold,
+            'model': opt.model,
+            'if_add_doc_description': opt.if_add_doc_description,
+            'if_add_node_text': opt.if_add_node_text,
+            'if_add_node_id': opt.if_add_node_id
+        }
+        if hasattr(opt, 'doc_id') and opt.doc_id is not None:
+            md_kwargs['doc_id'] = opt.doc_id
+        if hasattr(opt, 'doc_display_name') and opt.doc_display_name is not None:
+            md_kwargs['doc_display_name'] = opt.doc_display_name
+
+        toc_with_page_number = asyncio.run(md_to_tree(**md_kwargs))
         
         print('Parsing done, saving to file...')
         

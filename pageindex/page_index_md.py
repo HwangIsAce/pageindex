@@ -2,6 +2,7 @@ import asyncio
 import json
 import re
 import os
+import uuid
 try:
     from .utils import *
 except:
@@ -240,7 +241,7 @@ def clean_tree_for_output(tree_nodes):
     return cleaned_nodes
 
 
-async def md_to_tree(md_path, if_thinning=False, min_token_threshold=None, if_add_node_summary='no', summary_token_threshold=None, model=None, if_add_doc_description='no', if_add_node_text='no', if_add_node_id='yes'):
+async def md_to_tree(md_path, if_thinning=False, min_token_threshold=None, if_add_node_summary='no', summary_token_threshold=None, model=None, if_add_doc_description='no', if_add_node_text='no', if_add_node_id='yes', doc_id=None, doc_display_name=None):
     with open(md_path, 'r', encoding='utf-8') as f:
         markdown_content = f.read()
     
@@ -279,8 +280,11 @@ async def md_to_tree(md_path, if_thinning=False, min_token_threshold=None, if_ad
             # Create a clean structure without unnecessary fields for description generation
             clean_structure = create_clean_structure_for_description(tree_structure)
             doc_description = generate_doc_description(clean_structure, model=model)
+            resolved_doc_id = doc_id if doc_id is not None else uuid.uuid4().hex
+            resolved_doc_name = doc_display_name if doc_display_name is not None else os.path.splitext(os.path.basename(md_path))[0]
             return {
-                'doc_name': os.path.splitext(os.path.basename(md_path))[0],
+                'doc_id': resolved_doc_id,
+                'doc_name': resolved_doc_name,
                 'doc_description': doc_description,
                 'structure': tree_structure,
             }
@@ -291,8 +295,11 @@ async def md_to_tree(md_path, if_thinning=False, min_token_threshold=None, if_ad
         else:
             tree_structure = format_structure(tree_structure, order = ['title', 'node_id', 'summary', 'prefix_summary', 'line_num', 'nodes'])
     
+    resolved_doc_id = doc_id if doc_id is not None else uuid.uuid4().hex
+    resolved_doc_name = doc_display_name if doc_display_name is not None else os.path.splitext(os.path.basename(md_path))[0]
     return {
-        'doc_name': os.path.splitext(os.path.basename(md_path))[0],
+        'doc_id': resolved_doc_id,
+        'doc_name': resolved_doc_name,
         'structure': tree_structure,
     }
 

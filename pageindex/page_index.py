@@ -4,6 +4,7 @@ import copy
 import math
 import random
 import re
+import uuid
 from .utils import *
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -1065,6 +1066,15 @@ def page_index_main(doc, opt=None):
     if not is_valid_pdf:
         raise ValueError("Unsupported input type. Expected a PDF file path or BytesIO object.")
 
+    # Resolve doc_id: use provided value or generate UUID
+    doc_id = getattr(opt, 'doc_id', None)
+    if doc_id is None:
+        doc_id = uuid.uuid4().hex
+
+    # Resolve doc_name: use doc_display_name if provided, else get_pdf_name
+    doc_display_name = getattr(opt, 'doc_display_name', None)
+    doc_name = doc_display_name if doc_display_name is not None else get_pdf_name(doc)
+
     print('Parsing PDF...')
     page_list = get_page_tokens(doc)
 
@@ -1088,12 +1098,14 @@ def page_index_main(doc, opt=None):
                 clean_structure = create_clean_structure_for_description(structure)
                 doc_description = generate_doc_description(clean_structure, model=opt.model)
                 return {
-                    'doc_name': get_pdf_name(doc),
+                    'doc_id': doc_id,
+                    'doc_name': doc_name,
                     'doc_description': doc_description,
                     'structure': structure,
                 }
         return {
-            'doc_name': get_pdf_name(doc),
+            'doc_id': doc_id,
+            'doc_name': doc_name,
             'structure': structure,
         }
 
@@ -1101,7 +1113,8 @@ def page_index_main(doc, opt=None):
 
 
 def page_index(doc, model=None, toc_check_page_num=None, max_page_num_each_node=None, max_token_num_each_node=None,
-               if_add_node_id=None, if_add_node_summary=None, if_add_doc_description=None, if_add_node_text=None):
+               if_add_node_id=None, if_add_node_summary=None, if_add_doc_description=None, if_add_node_text=None,
+               doc_id=None, doc_display_name=None):
     
     user_opt = {
         arg: value for arg, value in locals().items()
