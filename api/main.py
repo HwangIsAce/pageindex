@@ -1,12 +1,13 @@
 """
 PageIndex API server.
 """
-from fastapi import BackgroundTasks, File, HTTPException, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi import BackgroundTasks, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
-from api.store import DATA_DIR, create_job, get_job
+from api.store import DATA_DIR, create_job, get_document, get_job, list_documents
 from api.tasks import run_indexing_task
+from pageindex import load_unified_toc
 
 app = FastAPI(
     title="PageIndex API",
@@ -68,3 +69,30 @@ def get_job_status(job_id: str):
         "progress": job.get("progress", 0),
         "message": job.get("message"),
     }
+
+
+@app.get("/documents")
+def list_documents_route():
+    """List all indexed documents."""
+    docs = list_documents()
+    return {
+        "documents": [
+            {
+                "id": d["id"],
+                "name": d["name"],
+                "doc_count": d["doc_count"],
+                "created_at": d["created_at"],
+            }
+            for d in docs
+        ],
+    }
+
+
+@app.get("/documents/{document_id}/toc")
+def get_document_toc(document_id: str):
+    """Get unified table of contents for a document."""
+    doc = get_document(document_id)
+    if doc is None:
+        raise HTTPException(404, "Document not found")
+    toc = load_unified_toc(doc["toc_path"])
+    return toc
