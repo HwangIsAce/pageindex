@@ -25,4 +25,3 @@ test = ["pytest>=7.0", "httpx>=0.24"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
-packages = ["api", "pageindex"]
