@@ -6,3 +6,8 @@ from .unified_toc import (
     save_unified_toc,
     load_unified_toc,
 )
+from .retrieval import (
+    unified_tree_search,
+    get_node_text,
+    query,
+)
