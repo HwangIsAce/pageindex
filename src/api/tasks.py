@@ -29,7 +29,7 @@ def run_indexing_task(job_id: str, upload_dir: Path):
 
         opt = ConfigLoader().load({
             "if_add_node_summary": "no",
-            "if_add_node_entities": "no",
+            "if_add_node_entities": "yes",
         })
         docs = [(str(p),) for p in paths]
 
