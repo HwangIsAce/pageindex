@@ -3,6 +3,7 @@ Retrieval layer for unified TOC: tree search and answer generation.
 Phase 4 of PageIndex extension.
 """
 import json
+import uuid
 from .utils import (
     ChatGPT_API,
     extract_json,
@@ -130,7 +131,7 @@ def get_node_text(doc_id, node_id, unified_toc, doc_store, model=None):
     return get_text_of_pdf_pages(page_list, start_page, end_page + 1)
 
 
-def query(query_text, unified_toc, doc_store, model=None):
+def query(query_text, unified_toc, doc_store, model=None, retrieval_log_path=None):
     """
     Full pipeline: tree search → fetch node texts → generate answer.
 
@@ -139,6 +140,7 @@ def query(query_text, unified_toc, doc_store, model=None):
         unified_toc: From build_unified_toc()
         doc_store: { doc_id: page_list or doc_path }
         model: OpenAI model name
+        retrieval_log_path: If set, log retrieved nodes for highlighting
 
     Returns:
         dict with 'retrieved_nodes', 'context', 'answer'
@@ -147,6 +149,11 @@ def query(query_text, unified_toc, doc_store, model=None):
 
     # Tree search
     nodes = unified_tree_search(query_text, unified_toc, model)
+
+    # Log retrieval for highlighting
+    if retrieval_log_path and nodes:
+        from .retrieval_logging import log_retrieval
+        log_retrieval(retrieval_log_path, nodes, query_id=uuid.uuid4().hex, query_text=query_text)
     if not nodes:
         return {
             'retrieved_nodes': [],

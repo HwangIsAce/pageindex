@@ -11,3 +11,9 @@ from .retrieval import (
     get_node_text,
     query,
 )
+from .retrieval_logging import (
+    log_retrieval,
+    aggregate_retrieval_counts,
+    merge_retrieval_counts,
+    load_unified_toc_with_retrieval_counts,
+)
