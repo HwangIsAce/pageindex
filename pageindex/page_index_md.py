@@ -241,7 +241,7 @@ def clean_tree_for_output(tree_nodes):
     return cleaned_nodes
 
 
-async def md_to_tree(md_path, if_thinning=False, min_token_threshold=None, if_add_node_summary='no', summary_token_threshold=None, model=None, if_add_doc_description='no', if_add_node_text='no', if_add_node_id='yes', doc_id=None, doc_display_name=None):
+async def md_to_tree(md_path, if_thinning=False, min_token_threshold=None, if_add_node_summary='no', summary_token_threshold=None, model=None, if_add_doc_description='no', if_add_node_text='no', if_add_node_id='yes', if_add_node_entities='no', doc_id=None, doc_display_name=None):
     with open(md_path, 'r', encoding='utf-8') as f:
         markdown_content = f.read()
     
@@ -274,6 +274,10 @@ async def md_to_tree(md_path, if_thinning=False, min_token_threshold=None, if_ad
         if if_add_node_text == 'no':
             # Remove text after summary generation if not requested
             tree_structure = format_structure(tree_structure, order = ['title', 'node_id', 'summary', 'prefix_summary', 'line_num', 'nodes'])
+
+        if if_add_node_entities == 'yes':
+            print(f"Extracting entities for each node...")
+            tree_structure = await add_entities_for_structure(tree_structure, model=model)
         
         if if_add_doc_description == 'yes':
             print(f"Generating document description...")
@@ -294,6 +298,10 @@ async def md_to_tree(md_path, if_thinning=False, min_token_threshold=None, if_ad
             tree_structure = format_structure(tree_structure, order = ['title', 'node_id', 'summary', 'prefix_summary', 'text', 'line_num', 'nodes'])
         else:
             tree_structure = format_structure(tree_structure, order = ['title', 'node_id', 'summary', 'prefix_summary', 'line_num', 'nodes'])
+
+        if if_add_node_entities == 'yes':
+            print(f"Extracting entities for each node...")
+            tree_structure = await add_entities_for_structure(tree_structure, model=model)
     
     resolved_doc_id = doc_id if doc_id is not None else uuid.uuid4().hex
     resolved_doc_name = doc_display_name if doc_display_name is not None else os.path.splitext(os.path.basename(md_path))[0]

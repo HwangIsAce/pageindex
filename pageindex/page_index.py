@@ -1093,7 +1093,13 @@ def page_index_main(doc, opt=None):
             await generate_summaries_for_structure(structure, model=opt.model)
             if opt.if_add_node_text == 'no':
                 remove_structure_text(structure)
-            if opt.if_add_doc_description == 'yes':
+        if getattr(opt, 'if_add_node_entities', 'no') == 'yes':
+            if opt.if_add_node_text == 'no' and opt.if_add_node_summary == 'no':
+                add_node_text(structure, page_list)
+            await add_entities_for_structure(structure, model=opt.model)
+            if opt.if_add_node_text == 'no' and opt.if_add_node_summary == 'no':
+                remove_structure_text(structure)
+        if opt.if_add_doc_description == 'yes':
                 # Create a clean structure without unnecessary fields for description generation
                 clean_structure = create_clean_structure_for_description(structure)
                 doc_description = generate_doc_description(clean_structure, model=opt.model)
@@ -1114,7 +1120,7 @@ def page_index_main(doc, opt=None):
 
 def page_index(doc, model=None, toc_check_page_num=None, max_page_num_each_node=None, max_token_num_each_node=None,
                if_add_node_id=None, if_add_node_summary=None, if_add_doc_description=None, if_add_node_text=None,
-               doc_id=None, doc_display_name=None):
+               if_add_node_entities=None, doc_id=None, doc_display_name=None):
     
     user_opt = {
         arg: value for arg, value in locals().items()

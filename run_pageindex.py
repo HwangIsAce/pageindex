@@ -27,6 +27,8 @@ if __name__ == "__main__":
                       help='Whether to add doc description to the doc')
     parser.add_argument('--if-add-node-text', type=str, default='no',
                       help='Whether to add text to the node')
+    parser.add_argument('--if-add-node-entities', type=str, default='no',
+                      help='Whether to add entities (key terms) to each node')
 
     parser.add_argument('--doc-id', type=str, default=None,
                       help='Document ID (auto-generated UUID if not specified)')
@@ -65,7 +67,8 @@ if __name__ == "__main__":
             'if_add_node_id': args.if_add_node_id,
             'if_add_node_summary': args.if_add_node_summary,
             'if_add_doc_description': args.if_add_doc_description,
-            'if_add_node_text': args.if_add_node_text
+            'if_add_node_text': args.if_add_node_text,
+            'if_add_node_entities': args.if_add_node_entities
         }
         if args.doc_id is not None:
             opt_kwargs['doc_id'] = args.doc_id
@@ -111,7 +114,8 @@ if __name__ == "__main__":
             'if_add_node_summary': args.if_add_node_summary,
             'if_add_doc_description': args.if_add_doc_description,
             'if_add_node_text': args.if_add_node_text,
-            'if_add_node_id': args.if_add_node_id
+            'if_add_node_id': args.if_add_node_id,
+            'if_add_node_entities': args.if_add_node_entities
         }
         if args.doc_id is not None:
             user_opt['doc_id'] = args.doc_id
@@ -130,7 +134,8 @@ if __name__ == "__main__":
             'model': opt.model,
             'if_add_doc_description': opt.if_add_doc_description,
             'if_add_node_text': opt.if_add_node_text,
-            'if_add_node_id': opt.if_add_node_id
+            'if_add_node_id': opt.if_add_node_id,
+            'if_add_node_entities': getattr(opt, 'if_add_node_entities', 'no')
         }
         if hasattr(opt, 'doc_id') and opt.doc_id is not None:
             md_kwargs['doc_id'] = opt.doc_id

@@ -623,6 +623,60 @@ async def generate_summaries_for_structure(structure, model=None):
     return structure
 
 
+async def extract_entities_for_node(node, model=None, max_content_chars=4000):
+    """
+    Extract key entities (company names, person names, dates, etc.) from a node.
+    Uses title, summary, or text - whichever is available.
+    """
+    content_parts = []
+    if node.get('summary'):
+        content_parts.append(node['summary'])
+    if node.get('prefix_summary'):
+        content_parts.append(node['prefix_summary'])
+    if node.get('text'):
+        text = node['text']
+        if len(text) > max_content_chars:
+            text = text[:max_content_chars] + '...'
+        content_parts.append(text)
+    if node.get('title'):
+        content_parts.insert(0, f"Section title: {node['title']}")
+
+    content = '\n\n'.join(content_parts) if content_parts else node.get('title', '')
+
+    prompt = f"""Extract the key entities from the following document section. Focus on: company names, person names, dates/years, legal/regulatory terms, product names, and other important named entities that would help when searching for this section.
+
+Section content:
+{content}
+
+Return a JSON array of entity strings, e.g. ["Apple Inc.", "2024", "SEC"]. Extract 3-15 entities. Return only the JSON array, no other text."""
+
+    try:
+        response = await ChatGPT_API_async(model, prompt)
+        parsed = extract_json(response)
+        if isinstance(parsed, list):
+            return [str(e) for e in parsed if e]
+        if isinstance(parsed, dict) and 'entities' in parsed:
+            return [str(e) for e in parsed['entities'] if e]
+        return []
+    except Exception as e:
+        logging.error(f"Failed to extract entities for node {node.get('title', 'unknown')}: {e}")
+        return []
+
+
+async def add_entities_for_structure(structure, model=None):
+    """Add entities to each node in the structure (async, parallel)."""
+    nodes = structure_to_list(structure)
+    tasks = [extract_entities_for_node(node, model=model) for node in nodes]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    for node, result in zip(nodes, results):
+        if isinstance(result, Exception):
+            logging.error(f"Entity extraction failed for {node.get('title', 'unknown')}: {result}")
+            node['entities'] = []
+        else:
+            node['entities'] = result
+    return structure
+
+
 def create_clean_structure_for_description(structure):
     """
     Create a clean structure for document description generation,
